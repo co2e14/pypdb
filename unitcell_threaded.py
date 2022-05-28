@@ -25,9 +25,9 @@ class unitCell:
     def printCode(self, structure):
         print(structure)
 
-    def writeSaveFile(toSave):
-        if not os.path.exists("longcellvalues.csv"):
-            with open("longcellvalues.csv", "w") as file:
+    def writeSaveFile(self, toSave):
+        if not os.path.exists("all_longcellvalues.csv"):
+            with open("all_longcellvalues.csv", "w") as file:
                 for val in toSave:
                     file.write(str(val) + "\n")
         else:
@@ -38,6 +38,9 @@ if __name__ == '__main__':
     unitCellCheck = unitCell()
     torun = unitCellCheck.getPDBs()
     longCellList = list(tqdm.tqdm(pool.imap(unitCellCheck.grabLongUnitCellThreaded, torun), total=len(torun)))
+    with open("longcellvalues.csv", "w") as file:
+        for cell in longCellList:
+            file.write(str(cell) + "\n")
     unitCellCheck.writeSaveFile(longCellList)
 
 
