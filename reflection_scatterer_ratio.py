@@ -2,27 +2,56 @@ import pypdb as pp
 import tqdm
 from multiprocessing import Pool, freeze_support
 import os
+from pypdb.clients.search.search_client import perform_search
+from pypdb.clients.search.search_client import ReturnType
+from pypdb.clients.search.operators import text_operators
+import re
 
 class reflectionsperscatterer:
     def __init__(self):
         pass
 
+    def removeUC(self, string):
+        regex = "[^A-Z]"
+        return (re.sub(regex, "", string))
+
     def getPDBs(self,):
-        self.xrcStructures = pp.Query("X-RAY DIFFRACTION", query_type="ExpTypeQuery").search()
-        print(f"Found {len(self.xrcStructures)} structures")
-        return self.xrcStructures
+        self.searchOperator = text_operators.ExactMatchOperator(value="X-RAY DIFFRACTION", attribute="exptl.method")
+        self.returnType = ReturnType.ENTRY
+        self.results = perform_search(self.searchOperator, self.returnType) 
+        print(f"Found {len(self.results)} structures")
+        self.results = self.results[100:200]
+        return self.results
 
     def grabMillerIndices(self, structure):
+        seqString = ""
         info = pp.get_info(structure)
-        millerInd = int(info["pdbx_vrpt_summary"]["num_miller_indices"])
-        return millerInd
+        fastaSeqs = pp.fasta_client.get_fasta_from_rcsb_entry(structure)
+        fastaSeqs = str(fastaSeqs)
+        splitSeq = fastaSeqs.split()
+        for x in splitSeq:
+            if x.startswith("sequence='"):
+                seqString += x
+            else:
+                pass
+        sulphurs = seqString.count("C") + seqString.count("M")
+        print(sulphurs)
+        try:
+            millerInd = int(info["pdbx_vrpt_summary"]["num_miller_indices"])
+        except:
+            millerInd = 0
+        if millerInd == 0:
+            pass
+        else:
+            infoOut = f"{structure}, {sulphurs}, {millerInd}"
+            return infoOut
 
     def printCode(self, structure):
         print(structure)
 
     def writeSaveFile(self, toSave):
-        if not os.path.exists("all_longcellvalues.csv"):
-            with open("all_longcellvalues.csv", "w") as file:
+        if not os.path.exists("refScaRat.csv"):
+            with open("refScaRat.csv", "w") as file:
                 for val in toSave:
                     file.write(str(val) + "\n")
         else:
@@ -30,10 +59,11 @@ class reflectionsperscatterer:
 
 if __name__ == '__main__':
     pool = Pool(os.cpu_count())
-    unitCellCheck = unitCell()
-    torun = unitCellCheck.getPDBs()
-    longCellList = list(tqdm.tqdm(pool.imap(unitCellCheck.grabLongUnitCellThreaded, torun), total=len(torun)))
-    with open("longcellvalues.csv", "w") as file:
-        for cell in longCellList:
-            file.write(str(cell) + "\n")
-    unitCellCheck.writeSaveFile(longCellList)
+    getRefScatRatio = reflectionsperscatterer()
+    torun = getRefScatRatio.getPDBs()
+    #print(torun)
+    refScatRatioList = list(tqdm.tqdm(pool.imap(getRefScatRatio.grabMillerIndices, torun), total=len(torun)))
+    with open("refScatRatio.csv", "w") as file:
+        for value in refScatRatioList:
+            file.write(str(value) + "\n")
+    #unitCellCheck.writeSaveFile(longCellList)

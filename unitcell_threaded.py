@@ -41,7 +41,7 @@ if __name__ == '__main__':
     with open("longcellvalues.csv", "w") as file:
         for cell in longCellList:
             file.write(str(cell) + "\n")
-    unitCellCheck.writeSaveFile(longCellList)
+    #unitCellCheck.writeSaveFile(longCellList)
 
 
     
