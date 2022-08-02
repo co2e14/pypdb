@@ -3,10 +3,8 @@ import tqdm
 from multiprocessing import Pool, freeze_support
 import os
 
-
-class unitCell:
+class reflectionsperscatterer:
     def __init__(self):
-        self.longCell_db = []
         pass
 
     def getPDBs(self,):
@@ -14,13 +12,10 @@ class unitCell:
         print(f"Found {len(self.xrcStructures)} structures")
         return self.xrcStructures
 
-    def grabLongUnitCellThreaded(self, structure):
+    def grabMillerIndices(self, structure):
         info = pp.get_info(structure)
-        a = info["cell"]["length_a"]
-        b = info["cell"]["length_b"]
-        c = info["cell"]["length_c"]
-        longCell = max(a, b, c)
-        return longCell
+        millerInd = int(info["pdbx_vrpt_summary"]["num_miller_indices"])
+        return millerInd
 
     def printCode(self, structure):
         print(structure)
@@ -42,7 +37,3 @@ if __name__ == '__main__':
         for cell in longCellList:
             file.write(str(cell) + "\n")
     unitCellCheck.writeSaveFile(longCellList)
-
-
-    
-
