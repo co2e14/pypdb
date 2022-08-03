@@ -20,7 +20,7 @@ class reflectionsperscatterer:
         self.returnType = ReturnType.ENTRY
         self.results = perform_search(self.searchOperator, self.returnType) 
         print(f"Found {len(self.results)} structures")
-        self.results = self.results[100:200]
+        #self.results = self.results[:3000]
         return self.results
 
     def grabMillerIndices(self, structure):
@@ -35,15 +35,18 @@ class reflectionsperscatterer:
             else:
                 pass
         sulphurs = seqString.count("C") + seqString.count("M")
-        print(sulphurs)
         try:
             millerInd = int(info["pdbx_vrpt_summary"]["num_miller_indices"])
         except:
-            millerInd = 0
-        if millerInd == 0:
+            millerInd = 1
+        try:
+            refPerScat = int(millerInd / sulphurs)
+        except:
+            refPerScat = 1
+        if millerInd == 1:
             pass
         else:
-            infoOut = f"{structure}, {sulphurs}, {millerInd}"
+            infoOut = f"{structure}, {sulphurs}, {millerInd}, {refPerScat}"
             return infoOut
 
     def printCode(self, structure):
@@ -51,7 +54,7 @@ class reflectionsperscatterer:
 
     def writeSaveFile(self, toSave):
         if not os.path.exists("refScaRat.csv"):
-            with open("refScaRat.csv", "w") as file:
+            with open("refScaRat.csv", "a") as file:
                 for val in toSave:
                     file.write(str(val) + "\n")
         else:
