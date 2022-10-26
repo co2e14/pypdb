@@ -21,10 +21,33 @@ def get_batch(batch_url):
         yield response, total
         batch_url = get_next_link(response.headers)
 
-# uncompressed
-url = 'https://rest.uniprot.org/uniprotkb/search?format=fasta&query=%28%2A%29%20AND%20%28model_organism%3A9606%29&size=500'
+url = 'https://rest.uniprot.org/uniprotkb/search?format=fasta&query=%28%28taxonomy_id%3A2759%29%29&size=500'
 progress = 0
-with open('human.csv', 'w') as f:
+with open('eukaryota.fasta', 'w') as f:
+    for batch, total in get_batch(url):
+        lines = batch.text.splitlines()
+        if not progress:
+            print(lines[0], file=f)
+        for line in lines[1:]:
+            print(line, file=f)
+        progress += len(lines[1:])
+        print(f'{progress} / {total}')
+
+url = 'https://rest.uniprot.org/uniprotkb/search?format=fasta&query=%28%28taxonomy_id%3A2157%29%29&size=500'
+progress = 0
+with open('archaea.fasta', 'w') as f:
+    for batch, total in get_batch(url):
+        lines = batch.text.splitlines()
+        if not progress:
+            print(lines[0], file=f)
+        for line in lines[1:]:
+            print(line, file=f)
+        progress += len(lines[1:])
+        print(f'{progress} / {total}')
+
+url = 'https://rest.uniprot.org/uniprotkb/search?format=fasta&query=%28%28taxonomy_id%3A2%29%29&size=500'
+progress = 0
+with open('eukaryota.fasta', 'w') as f:
     for batch, total in get_batch(url):
         lines = batch.text.splitlines()
         if not progress:
