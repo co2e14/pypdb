@@ -1,5 +1,6 @@
 # pdbx_wavelength_list
 import ast
+from xml.dom.domreg import well_known_implementations
 import pypdb as pp
 import tqdm
 from multiprocessing import Pool, freeze_support
@@ -18,7 +19,7 @@ class wavelength:
         self.returnType = ReturnType.ENTRY
         self.results = perform_search(self.searchOperator, self.returnType) 
         print(f"Found {len(self.results)} structures")
-        #self.results = self.results[:3000]
+        #self.results = self.results[:1000]
         return self.results
 
     def getWavelength(self, structure):
@@ -33,7 +34,6 @@ class wavelength:
         if wavelength == None:
             pass
         else:
-            print(f"{structure}: {wavelength}")
             return wavelength
 
 if __name__ == '__main__':
@@ -41,3 +41,9 @@ if __name__ == '__main__':
     getWavelengths = wavelength()
     toRun = getWavelengths.getPDBs()
     wavelengthList = list(tqdm.tqdm(pool.imap(getWavelengths.getWavelength, toRun), total=len(toRun)))
+    with open("wavelengthlistvalues.csv", "w") as file:
+        for value in wavelengthList:
+            if value != None:
+                file.write(str(value) + "\n")
+            else:
+                pass
