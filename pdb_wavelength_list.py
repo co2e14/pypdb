@@ -1,4 +1,3 @@
-# pdbx_wavelength_list
 import ast
 from xml.dom.domreg import well_known_implementations
 import pypdb as pp
@@ -19,7 +18,7 @@ class wavelength:
         self.returnType = ReturnType.ENTRY
         self.results = perform_search(self.searchOperator, self.returnType) 
         print(f"Found {len(self.results)} structures")
-        #self.results = self.results[:1000]
+        #self.results = self.results[8500:9000]
         return self.results
 
     def getWavelength(self, structure):
@@ -28,22 +27,31 @@ class wavelength:
             wavelength = str(info["diffrn_source"])
             for char in "[]": wavelength = wavelength.replace(char, "")
             wavelength = ast.literal_eval(wavelength)
-            wavelength = float(wavelength["pdbx_wavelength_list"])
+            multi_wavelength_out = []
+            if len(wavelength) > 1:
+                for dif_id in range(0, len(wavelength), 1):
+                    multi_wavelength = wavelength[dif_id]
+                    multi_wavelength_ = float(multi_wavelength["pdbx_wavelength_list"])
+                    multi_wavelength_out += [multi_wavelength_]
+            else:
+                pass
         except:
             wavelength = None
-        if wavelength == None:
+        if wavelength == None or multi_wavelength_out == []:
             pass
-        else:
-            return wavelength
+        else: 
+            return structure, multi_wavelength_out
 
 if __name__ == '__main__':
     pool = Pool(os.cpu_count())
     getWavelengths = wavelength()
     toRun = getWavelengths.getPDBs()
     wavelengthList = list(tqdm.tqdm(pool.imap(getWavelengths.getWavelength, toRun), total=len(toRun)))
-    with open("wavelengthlistvalues.csv", "w") as file:
+    with open("wavelengthlistvalues_all.csv", "w") as file:
         for value in wavelengthList:
             if value != None:
-                file.write(str(value) + "\n")
+                for wave_val in range(0, len(value[1])):
+                    pdb_wave_pair = str(value[0] + ", " + str(value[1][wave_val]))
+                    file.write(pdb_wave_pair + "\n")
             else:
                 pass
