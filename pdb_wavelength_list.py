@@ -7,23 +7,27 @@ from pypdb.clients.search.search_client import perform_search
 from pypdb.clients.search.search_client import ReturnType
 from pypdb.clients.search.operators import text_operators
 
+
 class wavelength:
     def __init__(self):
         pass
 
     def getPDBs(self,):
-        self.searchOperator = text_operators.ExactMatchOperator(value="X-RAY DIFFRACTION", attribute="exptl.method")
+        self.searchOperator = text_operators.ExactMatchOperator(
+            value="X-RAY DIFFRACTION", attribute="exptl.method"
+        )
         self.returnType = ReturnType.ENTRY
-        self.results = perform_search(self.searchOperator, self.returnType) 
+        self.results = perform_search(self.searchOperator, self.returnType)
         print(f"Found {len(self.results)} structures")
-        #self.results = self.results[8500:9000]
+        # self.results = self.results[8500:9000]
         return self.results
 
     def getWavelength(self, structure):
         info = pp.get_info(structure)
         try:
             wavelength = str(info["diffrn_source"])
-            for char in "[]": wavelength = wavelength.replace(char, "")
+            for char in "[]":
+                wavelength = wavelength.replace(char, "")
             length = wavelength.count("pdbx_wavelength_list")
             if length <= 1:
                 multi = False
@@ -46,17 +50,20 @@ class wavelength:
             else:
                 pass
         except:
-            wavelength = None  
+            wavelength = None
         if wavelength == None:
             pass
         else:
             return structure, wavelength
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pool = Pool(os.cpu_count())
     getWavelengths = wavelength()
     toRun = getWavelengths.getPDBs()
-    wavelengthList = list(tqdm.tqdm(pool.imap(getWavelengths.getWavelength, toRun), total=len(toRun)))
+    wavelengthList = list(
+        tqdm.tqdm(pool.imap(getWavelengths.getWavelength, toRun), total=len(toRun))
+    )
     print(wavelengthList)
     with open("wavelengthlistvalues_all.csv", "w") as file:
         for value in wavelengthList:
