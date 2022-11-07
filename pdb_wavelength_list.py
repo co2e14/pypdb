@@ -16,7 +16,7 @@ class wavelength:
         self.returnType = ReturnType.ENTRY
         self.results = perform_search(self.searchOperator, self.returnType) 
         print(f"Found {len(self.results)} structures")
-        self.results = self.results[8500:9000]
+        #self.results = self.results[8500:9000]
         return self.results
 
     def getWavelength(self, structure):
