@@ -1,5 +1,4 @@
 import ast
-from xml.dom.domreg import well_known_implementations
 import pypdb as pp
 import tqdm
 from multiprocessing import Pool, freeze_support
@@ -7,7 +6,6 @@ import os
 from pypdb.clients.search.search_client import perform_search
 from pypdb.clients.search.search_client import ReturnType
 from pypdb.clients.search.operators import text_operators
-import re
 
 class wavelength:
     def __init__(self):
@@ -18,7 +16,7 @@ class wavelength:
         self.returnType = ReturnType.ENTRY
         self.results = perform_search(self.searchOperator, self.returnType) 
         print(f"Found {len(self.results)} structures")
-        #self.results = self.results[8500:9000]
+        self.results = self.results[7000:9000]
         return self.results
 
     def getWavelength(self, structure):
@@ -39,7 +37,8 @@ class wavelength:
             wavelength = None
         if wavelength == None or multi_wavelength_out == []:
             pass
-        else: 
+        else:
+            print(structure, multi_wavelength_out) 
             return structure, multi_wavelength_out
 
 if __name__ == '__main__':
@@ -53,5 +52,6 @@ if __name__ == '__main__':
                 for wave_val in range(0, len(value[1])):
                     pdb_wave_pair = str(value[0] + ", " + str(value[1][wave_val]))
                     file.write(pdb_wave_pair + "\n")
+                    print(pdb_wave_pair)
             else:
                 pass
