@@ -22,6 +22,12 @@ class reflectionsperscatterer:
         print(f"Found {len(self.results)} structures")
         #self.results = self.results[:3000]
         return self.results
+    
+    def getI23PDBs(self,):
+        self.searchOperator = text_operators.ExactMatchOperator(value="I23", attribute="diffrn_source.pdbx_synchrotron_beamline")
+        self.returnType = ReturnType.ENTRY
+        self.results = perform_search(self.searchOperator, self.returnType)
+        return self.results
 
     def grabMillerIndices(self, structure):
         seqString = ""
