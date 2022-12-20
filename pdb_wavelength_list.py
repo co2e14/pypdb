@@ -22,6 +22,12 @@ class wavelength:
         # self.results = self.results[8500:9000]
         return self.results
 
+    def getI23PDBs(self,):
+        self.searchOperator = text_operators.ExactMatchOperator(value="I23", attribute="diffrn_source.pdbx_synchrotron_beamline")
+        self.returnType = ReturnType.ENTRY
+        self.results = perform_search(self.searchOperator, self.returnType)
+        return self.results
+
     def getWavelength(self, structure):
         info = pp.get_info(structure)
         try:
@@ -60,12 +66,12 @@ class wavelength:
 if __name__ == "__main__":
     pool = Pool(os.cpu_count())
     getWavelengths = wavelength()
-    toRun = getWavelengths.getPDBs()
+    toRun = getWavelengths.getI23PDBs()
     wavelengthList = list(
         tqdm.tqdm(pool.imap(getWavelengths.getWavelength, toRun), total=len(toRun))
     )
     print(wavelengthList)
-    with open("wavelengthlistvalues_all.csv", "w") as file:
+    with open("wavelengthlistvalues_I23.csv", "w") as file:
         for value in wavelengthList:
             if value != None:
                 for wave_val in range(0, len(value[1])):
