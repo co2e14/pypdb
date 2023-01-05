@@ -28,6 +28,14 @@ class wavelength:
         self.results = perform_search(self.searchOperator, self.returnType)
         return self.results
 
+    def getNeutronDiffractionPDBs(self,):
+        self.searchOperator = text_operators.ExactMatchOperator(
+            value="NEUTRON DIFFRACTION", attribute="exptl.method"
+        )        
+        self.returnType = ReturnType.ENTRY
+        self.results = perform_search(self.searchOperator, self.returnType)
+        return self.results
+
     def getWavelength(self, structure):
         info = pp.get_info(structure)
         try:
@@ -66,12 +74,12 @@ class wavelength:
 if __name__ == "__main__":
     pool = Pool(os.cpu_count())
     getWavelengths = wavelength()
-    toRun = getWavelengths.getPDBs()
+    toRun = getWavelengths.getNeutronDiffractionPDBs()
     wavelengthList = list(
         tqdm.tqdm(pool.imap(getWavelengths.getWavelength, toRun), total=len(toRun))
     )
     print(wavelengthList)
-    with open("wavelengthlistvalues_all.csv", "w") as file:
+    with open("wavelengthlistvalues_neutron.csv", "w") as file:
         for value in wavelengthList:
             if value != None:
                 for wave_val in range(0, len(value[1])):
