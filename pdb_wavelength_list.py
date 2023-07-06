@@ -3,8 +3,7 @@ import pypdb as pp
 import tqdm
 from multiprocessing import Pool, freeze_support
 import os
-from pypdb.clients.search.search_client import perform_search
-from pypdb.clients.search.search_client import ReturnType
+from pypdb.clients.search.search_client import perform_search, perform_search_with_graph, ReturnType, QueryGroup, LogicalOperator
 from pypdb.clients.search.operators import text_operators
 
 
@@ -13,11 +12,17 @@ class wavelength:
         pass
 
     def getPDBs(self,):
+        self.query = QueryGroup(
+            queries=[(text_operators.ExactMatchOperator(value="X-RAY DIFFRACTION", attribute="exptl.method")), (text_operators.ExactMatchOperator(value="SYNCHROTRON", attribute="diffrn_source.source"))],
+            logical_operator=LogicalOperator.AND
+            )
         self.searchOperator = text_operators.ExactMatchOperator(
             value="X-RAY DIFFRACTION", attribute="exptl.method"
         )
         self.returnType = ReturnType.ENTRY
         self.results = perform_search(self.searchOperator, self.returnType)
+        print(f"Found {len(self.results)} structures")
+        self.results = perform_search_with_graph(query_object=self.query, return_type=self.returnType)
         print(f"Found {len(self.results)} structures")
         # self.results = self.results[8500:9000]
         return self.results

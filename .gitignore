@@ -1,3 +1,7 @@
 longcellvalues_copy.csv
 longcellvalues.csv
 *.pyc
+.DS_Store
+.gitignore
+.vscode/settings.json
+over_1.7
