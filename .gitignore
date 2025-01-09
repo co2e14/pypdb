@@ -5,3 +5,4 @@ longcellvalues.csv
 .gitignore
 .vscode/settings.json
 over_1.7
+.venv
