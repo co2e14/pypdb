@@ -5,3 +5,9 @@ longcellvalues.csv
 .gitignore
 .vscode/settings.json
 over_1.7
+.venv
+allinfoout.csv
+columns.csv
+entries__.csv
+entries.csv
+output_dataframe.csv
