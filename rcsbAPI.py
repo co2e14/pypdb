@@ -19,7 +19,7 @@ def makeQuery():
     )
 
     results = list(query())
-    results = results[:5000] # for running test mode
+    results = results[:] # for running test mode
     return results
 
 def fetch_pdb_details(pdb_id):
