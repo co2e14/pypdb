@@ -116,21 +116,21 @@ def process_file(file_path):
     return df
 
 if __name__ == "__main__":
-    pool = Pool(os.cpu_count())
-    PDBIDs = makeQuery()
-    wavelengthList = list(
-        tqdm.tqdm(pool.imap(fetch_pdb_details, PDBIDs), total=len(PDBIDs))
-    )
-    print(wavelengthList)
-    with open("allinfoout.csv", "w") as file:
-        for value in wavelengthList:
-            if value != None:
-                for secondval in value:
-                    if secondval != None:
-                        print(secondval)
-                        file.write(str(secondval) + '\n')
-                    else:
-                        pass
-    
+    # pool = Pool(os.cpu_count())
+    # PDBIDs = makeQuery()
+    # wavelengthList = list(
+    #     tqdm.tqdm(pool.imap(fetch_pdb_details, PDBIDs), total=len(PDBIDs))
+    # )
+    # print(wavelengthList)
+    # with open("allinfoout.csv", "w") as file:
+    #     for value in wavelengthList:
+    #         if value != None:
+    #             for secondval in value:
+    #                 if secondval != None:
+    #                     print(secondval)
+    #                     file.write(str(secondval) + '\n')
+    #                 else:
+    #                     pass
+
     df = process_file("allinfoout.csv")
-    df.to_csv("wl_bl_id.csv")
+    df.to_csv("wl_bl_id.csv", index=False)
