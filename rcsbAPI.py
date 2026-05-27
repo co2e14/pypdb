@@ -1,4 +1,3 @@
-from rcsbsearchapi import AttributeQuery
 import requests
 from multiprocessing import Pool
 import os
@@ -6,21 +5,33 @@ import pandas as pd
 import tqdm
 import re
 
+RCSB_SEARCH_URL = "https://search.rcsb.org/rcsbsearch/v2/query"
+
 def makeQuery():
-    """query rscb pdb database for X-ray diffraction pdbs
+    """Query the RCSB PDB search API for every X-ray diffraction entry.
+
+    Uses the RCSB search v2 REST endpoint directly so we don't depend on
+    rcsbsearchapi (which currently crashes at import against the live schema).
 
     Returns:
-        list: all pdb ids matching the query
+        list[str]: all PDB IDs whose exptl.method == "X-RAY DIFFRACTION".
     """
-    query = AttributeQuery(
-        attribute="exptl.method",
-        operator="exact_match",
-        value="X-RAY DIFFRACTION"
-    )
-
-    results = list(query())
-    results = results[:] # for running test mode
-    return results
+    payload = {
+        "query": {
+            "type": "terminal",
+            "service": "text",
+            "parameters": {
+                "attribute": "exptl.method",
+                "operator": "exact_match",
+                "value": "X-RAY DIFFRACTION",
+            },
+        },
+        "return_type": "entry",
+        "request_options": {"return_all_hits": True},
+    }
+    response = requests.post(RCSB_SEARCH_URL, json=payload, timeout=120)
+    response.raise_for_status()
+    return [hit["identifier"] for hit in response.json().get("result_set", [])]
 
 def fetch_pdb_details(pdb_id):
     """fetches pdb details from pdb_id and returns dictionary of wavelength, beamline and pdbid
@@ -116,21 +127,19 @@ def process_file(file_path):
     return df
 
 if __name__ == "__main__":
-    # pool = Pool(os.cpu_count())
-    # PDBIDs = makeQuery()
-    # wavelengthList = list(
-    #     tqdm.tqdm(pool.imap(fetch_pdb_details, PDBIDs), total=len(PDBIDs))
-    # )
-    # print(wavelengthList)
-    # with open("allinfoout.csv", "w") as file:
-    #     for value in wavelengthList:
-    #         if value != None:
-    #             for secondval in value:
-    #                 if secondval != None:
-    #                     print(secondval)
-    #                     file.write(str(secondval) + '\n')
-    #                 else:
-    #                     pass
+    pool = Pool(os.cpu_count())
+    PDBIDs = makeQuery()
+    print(f"Found {len(PDBIDs)} X-ray entries to fetch")
+    wavelengthList = list(
+        tqdm.tqdm(pool.imap_unordered(fetch_pdb_details, PDBIDs), total=len(PDBIDs))
+    )
+    with open("allinfoout.csv", "w") as file:
+        for value in wavelengthList:
+            if value is None:
+                continue
+            for secondval in value:
+                if secondval is not None:
+                    file.write(str(secondval) + '\n')
 
     df = process_file("allinfoout.csv")
     df.to_csv("wl_bl_id.csv", index=False)
